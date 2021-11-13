@@ -1,9 +1,12 @@
 # imports
 from selenium import webdriver
+from selenium.webdriver.common.by import By
 from selenium.common.exceptions import NoSuchElementException
-import time
-import sys
 from win32com.client import Dispatch
+import time
+from datetime import date
+import sys
+import pyautogui
 
 '''
 op = webDriver.ChromeOptions()
@@ -13,14 +16,14 @@ op.add_argument("headless")
 
 # Speech function
 def speak_function(sentence):
-    speak = Dispatch("SAPI.SpVoice")
-    speak.Speak(sentence)
+    speaker = Dispatch("SAPI.SpVoice")
+    speaker.Speak(sentence)
 
 
 # func to find ERROR MESSAGES elements in the web page
 def find_element(id_para):
     try:
-        driver.find_element_by_id(id_para)
+        driver.find_element(By.ID, id_para)
     except NoSuchElementException:
         return False
     return True
@@ -34,6 +37,7 @@ def try_again():
         exec(open("bookGas.py").read())
     else:
         exit(0)
+
 
 print("\n")
 
@@ -49,19 +53,18 @@ driver.get('https://myhpgas.in/myHPGas/HPGas/BookRefill.aspx')
 
 # click on booking link
 time.sleep(3)
-bookingLink = driver.find_element_by_xpath(
-    '//*[@id="wrapper"]/div[2]/div[2]/table/tbody/tr/td[2]/div/table/tbody/tr/td[2]/b/i/a')
+bookingLink = driver.find_element(By.XPATH, '//*[@id="wrapper"]/div[2]/div[2]/table/tbody/tr/td[2]/div/table/tbody/tr/td[2]/b/i/a')
 bookingLink.click()
 
 # fill agency name
 time.sleep(3)
-agencyName = driver.find_element_by_id('ContentPlaceHolder1_txtDistributorName')
+agencyName = driver.find_element(By.ID, 'ContentPlaceHolder1_txtDistributorName')
 agencyName.click()
 agencyName.send_keys('SOUNDARYA AGENCIES BANGALORE CENTRAL (14755700)')
 
 # fill customer ID
 time.sleep(1)
-consumerNumber = driver.find_element_by_id('ContentPlaceHolder1_txtConsumerNoQuick')
+consumerNumber = driver.find_element(By.ID, 'ContentPlaceHolder1_txtConsumerNoQuick')
 consumerNumber.click()
 consumerNumber.send_keys('639937')
 
@@ -72,12 +75,12 @@ driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
 speak_function('enter the captcha code in 10 seconds cause i am a robot.')
 
 time.sleep(0.5)
-captcha = driver.find_element_by_id('ContentPlaceHolder1_MyCaptcha1_tbCaptchaInput')
+captcha = driver.find_element(By.ID, 'ContentPlaceHolder1_MyCaptcha1_tbCaptchaInput')
 captcha.click()
 
 # click on submit button
 time.sleep(10)
-submitButton = driver.find_element_by_id('ContentPlaceHolder1_btnProceed')
+submitButton = driver.find_element(By.ID, 'ContentPlaceHolder1_btnProceed')
 submitButton.click()
 
 # if timed out wrt captcha
@@ -89,8 +92,8 @@ if find_element("ContentPlaceHolder1_lblErrorMessage"):
     try_again()
 
 # if timed out because of previous login
-elif find_element('ContentPlaceHolder1_divSuccessMsg'):
-    speak_function('sorry there was a problem try again after a while')
+elif find_element('ContentPlaceHolder1_divMain'):
+    speak_function('sorry! your previous login session is not ended yet. Please try again after a while')
     print('TRY AGAIN AFTER SOME TIME (~30MIN)\n')
     driver.close()
     sys.exit()
@@ -99,12 +102,12 @@ elif find_element('ContentPlaceHolder1_divSuccessMsg'):
 else:
     # fill mobile number
     time.sleep(1)
-    mobileNumber = driver.find_element_by_id('ContentPlaceHolder1_txtMobileNo')
+    mobileNumber = driver.find_element(By.ID, 'ContentPlaceHolder1_txtMobileNo')
     mobileNumber.click()
     mobileNumber.send_keys('9611252969')
 
     # print the price
-    price = driver.find_element_by_id('ContentPlaceHolder1_lblRsp')
+    price = driver.find_element(By.ID, 'ContentPlaceHolder1_lblRsp')
     rate = price.get_attribute('innerHTML')
     print('PRICE IS ', rate)
     speak_function(f'price is {rate.split(".")[0]}')
@@ -116,7 +119,7 @@ else:
     # if user wants to pay now
     if pay == '1':
         # click on pay button
-        payButton = driver.find_element_by_id('ContentPlaceHolder1_btnOnline')
+        payButton = driver.find_element(By.ID, 'ContentPlaceHolder1_btnOnline')
         payButton.click()
 
         # if timed out because of previous login
@@ -132,17 +135,17 @@ else:
 
             # check the T&C box
             time.sleep(0.6)
-            termsCheckBox = driver.find_element_by_name('ctl00$ContentPlaceHolder1$chkAgree')
+            termsCheckBox = driver.find_element(By.NAME, 'ctl00$ContentPlaceHolder1$chkAgree')
             termsCheckBox.click()
 
             # click on accept
             time.sleep(1)
-            acceptButton = driver.find_element_by_id('ContentPlaceHolder1_btnAccept')
+            acceptButton = driver.find_element(By.ID, 'ContentPlaceHolder1_btnAccept')
             acceptButton.click()
 
             # click on proceed to pay
             time.sleep(2)
-            proceedButton = driver.find_element_by_xpath('/html/body/center/form/div/div[2]/input')
+            proceedButton = driver.find_element(By.XPATH, '/html/body/center/form/div/div[2]/input')
             proceedButton.click()
             speak_function('Please pay now with a payment method of your choice')
 
@@ -162,5 +165,11 @@ while True:
     if find_element('ContentPlaceHolder1_lblSuccessMsg'):
         print("-------------------------\n")
         print('GAS REFILL BOOKED SUCCESSFULLY\n')
+
+        # take a screenshot of the bill
+        ss = pyautogui.screenshot()
+        ss.save(rf"C:\Users\prakyath.arya\Downloads\LPG-{date.today()}.jpeg")
+
         speak_function('gas refill booked successfully. thank you and see you soon\n')
         break
+exit(0)
