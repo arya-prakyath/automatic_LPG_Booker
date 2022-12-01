@@ -85,14 +85,26 @@ submitButton.click()
 
 # if timed out wrt captcha
 time.sleep(3)
-if find_element("ContentPlaceHolder1_lblErrorMessage"):
-    speak_function('you are timed out due to incorrect code')
-    print('YOU ARE TIMED OUT BECAUSE CODE WAS NOT TYPED IN PROPERLY\n')
-    driver.close()
-    try_again()
-
-# if timed out because of previous login
-elif find_element('ContentPlaceHolder1_divMain'):
+while find_element("ContentPlaceHolder1_lblErrorMessage"):
+    speak_function('you entered an incorrect captcha code. Type 1 to try again.')
+    captcha_again = input("INCORRECT CAPTCHA CODE\nType '1' to retry\nType '0' to exit\n")
+    if captcha_again == "1":   
+        # ask user to type captcha
+        speak_function('Enter the captcha code in 10 seconds.')
+        time.sleep(0.5)
+        captcha = driver.find_element(By.ID, 'ContentPlaceHolder1_MyCaptcha1_tbCaptchaInput')
+        captcha.click()
+        # click on submit button
+        time.sleep(10)
+        submitButton = driver.find_element(By.ID, 'ContentPlaceHolder1_btnProceed')
+        submitButton.click()
+        time.sleep(3)
+                       
+    else:
+        driver.close()
+    
+# if timed out because the previous order is pending
+if find_element('ContentPlaceHolder1_lblSuccessMsg'):
     speak_function('sorry! your previous login session is not ended yet. Please try again after a while')
     print('TRY AGAIN AFTER SOME TIME (~30MIN)\n')
     driver.close()
